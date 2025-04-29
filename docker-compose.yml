@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  auth:
+    build: .
+    container_name: msauthenticationservihouse
+    ports:
+      - "${PORT}:${PORT}"
+    env_file:
+      - .env

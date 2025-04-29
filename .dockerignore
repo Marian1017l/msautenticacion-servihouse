@@ -1,0 +1,17 @@
+# Ignora node_modules (lo instala Docker por separado)
+node_modules
+npm-debug.log
+
+# Ignora archivos de entorno sensibles
+.env
+
+# Ignora archivos de configuración de desarrollo
+.vscode
+*.log
+
+# Otros archivos innecesarios
+Dockerfile*
+docker-compose*
+.git
+.gitignore
+README.md
