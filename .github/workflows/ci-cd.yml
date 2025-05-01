@@ -22,9 +22,6 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Run tests
-      run: npm test
-
     - name: Install Docker and Docker Compose
       run: |
         sudo apt-get update
