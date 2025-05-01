@@ -2,7 +2,7 @@ name: CI - Build and Test Node.js + Docker
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "development" ]
   pull_request:
     branches: [ "main" ]
 
