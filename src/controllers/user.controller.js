@@ -6,6 +6,9 @@ const signUpRequest = require('../models/signUpRequest'); //Importamos el modelo
 const resendCodeRequest = require('../models/resendCodeRequest'); //Importamos el modelo de resendCodeRequest
 const verifyCodeRequest = require('../models/verifyCodeRequest'); //Importamos el modelo de verifyCodeRequest
 const signInRequest = require('../models/signInRequest'); //Importamos el modelo de signInRequest
+const SendforgotPasswordRequest = require('../models/sendForgotPasswordRequest'); //Importamos el modelo de forgotPasswordRequest
+const resetpasswordRequest = require('../models/resetPasswordRequest'); //Importamos el modelo de resetPasswordRequest
+const forgotPasswordRequest = require('../models/forgotPasswordRequest'); //Importamos el modelo de forgotPasswordRequest
 require("dotenv").config(); //Nos permite leer las variables de entorno
 const { UserService } = require('../services/user.service'); //Importamos el servicio de usuario
 const e = require('express');
@@ -338,7 +341,7 @@ const resend2FACode = async (req, res) => {
         })
     }
     
-    let { userName, code, emailNotification } = req.body;
+    let { userName, emailNotification, email, phone } = req.body;
     try {
         const user = await prisma.user.findFirst({
             where: {
@@ -476,11 +479,261 @@ const verify2FACode = async (req, res) => {
     }
 }
 
+
+const sendforgotPassword = async (req, res) => {
+    if(!req.body) { 
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: "Request body is required"
+        })
+    }
+    let errors = SendforgotPasswordRequest.validate(req.body);
+    if(errors) {
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: errors
+        })
+    }
+    let {userName, emailNotification} = req.body;
+    const user = await prisma.user.findFirst({
+        where: {
+            userName
+        }
+    });
+    if(!user) {
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: "User does not exist"
+        })
+    }
+    //generar un hash para link de restablecimiento de contraseña
+    const hash = await bcrypt.hash(userName, 10);
+    const expirationTime = new Date();
+    expirationTime.setMinutes(expirationTime.getMinutes() + 60);
+    await prisma.user.update({
+        where: {
+            id: user.id
+        },
+        data: {
+            resetPasswordHash: hash,
+            resetPasswordExpiration: expirationTime
+        }
+    });
+    
+    if(emailNotification) {
+        UserService.sendForgotPasswordEmail(user.email, hash, userName);
+    } 
+    else
+    {
+        UserService.sendForgotPasswordSMS(user.phone, hash, userName); 
+    }
+    res.status(200).json({
+        success: true,
+        status: 200,
+        message: "Reset password link sent, please check your email or phone for the link"
+    })
+}
+
+const sendresetPassword = async (req, res) => {
+    if(!req.body) { 
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: "Request body is required"
+        })
+    }
+    let errors = forgotPasswordRequest.validate(req.body);
+    if(errors) {
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: errors
+        })
+    }
+    let {userName, emailNotification} = req.body;
+    const user = await prisma.user.findFirst({
+        where: {
+            userName
+        }
+    });
+    if(!user) {
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: "User does not exist"
+        })
+    }
+    const hash = await bcrypt.hash(userName, 10);
+    const expirationTime = new Date();
+    expirationTime.setMinutes(expirationTime.getMinutes() + 60);
+    await prisma.user.update({
+        where: {
+            id: user.id
+        },
+        data: {
+            resetPasswordHash: hash,
+            resetPasswordExpiration: expirationTime
+        }
+    });
+    
+    if(emailNotification) {
+        UserService.sendRestorePasswordEmail(user.email, hash, userName);
+    } 
+    else
+    {
+        UserService.sendRestorePasswordSMS(user.phone, hash, userName); 
+    }
+    res.status(200).json({
+        success: true,
+        status: 200,
+        message: "Reset password link sent, please check your email or phone for the link"
+    })
+}
+
+const resetpassword = async (req, res) => {
+    if(!req.body) { 
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: "Request body is required"
+        })
+    }
+    let errors = resetpasswordRequest.validate(req.body);
+    if(errors) {
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: errors
+        })
+    }
+    let {userName, oldPassword, newPassword, hash} = req.body;
+    const user = await prisma.user.findFirst({
+        where: {
+            userName
+        }
+    });
+    if(!user) {
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: "User does not exist"
+        })
+    }
+    const matchHash = hash === user.resetPasswordHash;
+    if(!matchHash) {
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: "Invalid hash"
+        })
+    }
+    const matchPassword = await bcrypt.compare(oldPassword, user.password);
+    if(!matchPassword) {
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: "Old password is incorrect"
+        })
+    }
+    if(user.resetPasswordExpiration < new Date()) {
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: "Hash expired"
+        })
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10); 
+    await prisma.user.update({
+        where: {
+            id: user.id
+        },
+        data: {
+            password: hashedPassword,
+            resetPasswordHash: null,
+            resetPasswordExpiration: null
+        }
+    });
+    res.status(200).json({
+        success: true,
+        status: 200,
+        message: "Password reset successfully"
+    })
+}
+
+const forgotpassword = async (req, res) => {
+    if(!req.body) { 
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: "Request body is required"
+        })
+    }
+    let errors = forgotPasswordRequest.validate(req.body);
+    if(errors) {
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: errors
+        })
+    }
+    let {userName, newPassword, hash} = req.body;
+    const user = await prisma.user.findFirst({
+        where: {
+            userName
+        }
+    });
+    if(!user) {
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: "User does not exist"
+        })
+    }
+    const matchHash = hash === user.resetPasswordHash;
+    if(!matchHash) {
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: "Invalid hash"
+        })
+    }
+    if(user.resetPasswordExpiration < new Date()) {
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: "Hash expired"
+        })
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+        where: {
+            id: user.id
+        },
+        data: {
+            password: hashedPassword,
+            resetPasswordHash: null,
+            resetPasswordExpiration: null
+        }
+    });
+    res.status(200).json({
+        success: true,
+        status: 200,
+        message: "Password reset successfully"
+    })
+}
+
 module.exports = {
     signUp,
     resendVerifyCode,
     verifyCode,
     signIn,
     resend2FACode,
-    verify2FACode
+    verify2FACode,
+    sendresetPassword,
+    sendforgotPassword,
+    resetpassword,
+    forgotpassword
 };
