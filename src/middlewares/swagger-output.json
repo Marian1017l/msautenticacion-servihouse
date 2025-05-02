@@ -21,7 +21,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "userName": {
+                "user_name": {
                   "example": "any"
                 },
                 "email": {
@@ -33,10 +33,13 @@
                 "password": {
                   "example": "any"
                 },
-                "rolName": {
+                "rol_name": {
                   "example": "any"
                 },
-                "emailNotification": {
+                "email_notification": {
+                  "example": "any"
+                },
+                "full_name": {
                   "example": "any"
                 }
               }
@@ -66,7 +69,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "userName": {
+                "user_name": {
                   "example": "any"
                 },
                 "email": {
@@ -75,7 +78,7 @@
                 "phone": {
                   "example": "any"
                 },
-                "emailNotification": {
+                "email_notification": {
                   "example": "any"
                 }
               }
@@ -105,7 +108,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "userName": {
+                "user_name": {
                   "example": "any"
                 },
                 "code": {
@@ -138,13 +141,13 @@
             "schema": {
               "type": "object",
               "properties": {
-                "userName": {
+                "user_name": {
                   "example": "any"
                 },
                 "password": {
                   "example": "any"
                 },
-                "emailNotification": {
+                "email_notification": {
                   "example": "any"
                 }
               }
@@ -174,10 +177,10 @@
             "schema": {
               "type": "object",
               "properties": {
-                "userName": {
+                "user_name": {
                   "example": "any"
                 },
-                "emailNotification": {
+                "email_notification": {
                   "example": "any"
                 },
                 "email": {
@@ -213,7 +216,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "userName": {
+                "user_name": {
                   "example": "any"
                 },
                 "code": {
@@ -246,10 +249,10 @@
             "schema": {
               "type": "object",
               "properties": {
-                "userName": {
+                "user_name": {
                   "example": "any"
                 },
-                "emailNotification": {
+                "email_notification": {
                   "example": "any"
                 }
               }
@@ -276,10 +279,10 @@
             "schema": {
               "type": "object",
               "properties": {
-                "userName": {
+                "user_name": {
                   "example": "any"
                 },
-                "emailNotification": {
+                "email_notification": {
                   "example": "any"
                 }
               }
@@ -301,18 +304,56 @@
         "description": "",
         "parameters": [
           {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "schema": {
               "type": "object",
               "properties": {
-                "userName": {
+                "user_name": {
                   "example": "any"
                 },
-                "oldPassword": {
+                "old_password": {
                   "example": "any"
                 },
-                "newPassword": {
+                "new_password": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/user/ForgotPassword": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "user_name": {
+                  "example": "any"
+                },
+                "new_password": {
                   "example": "any"
                 },
                 "hash": {
@@ -332,35 +373,26 @@
         }
       }
     },
-    "/user/ForgotPassword": {
-      "post": {
+    "/user/GetUserById/{id}": {
+      "get": {
         "description": "",
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "userName": {
-                  "example": "any"
-                },
-                "newPassword": {
-                  "example": "any"
-                },
-                "hash": {
-                  "example": "any"
-                }
-              }
-            }
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
         "responses": {
           "200": {
             "description": "OK"
           },
-          "400": {
-            "description": "Bad Request"
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -518,6 +550,16 @@
           },
           "500": {
             "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/rol/{Create{where{id:id}": {
+      "delete": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
           }
         }
       }

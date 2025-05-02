@@ -1,14 +1,14 @@
 class verifyCodeRequest {
-    constructor(userName) {
-        this.userName = userName;
+    constructor(user_name) {
+        this.user_name = user_name;
         this.code = code;
     }
   
     static validate(data) {
-        const { userName, code } = data;
+        const { user_name, code } = data;
         const errors = [];
   
-        if (!userName || userName.length < 5) {
+        if (!user_name || user_name.length < 5) {
             errors.push("User name must be at least 5 characters long.");
         }
   

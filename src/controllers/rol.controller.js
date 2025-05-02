@@ -206,7 +206,7 @@ const deleteRol = async (req, res) => {
         const { id } = req.params; 
         const userHasRol = await prisma.user.findMany({
             where: {
-                rolId: id, 
+                rol_id: id, 
             },
         });
         if (userHasRol.length > 0) { 

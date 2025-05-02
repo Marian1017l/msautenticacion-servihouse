@@ -1,18 +1,18 @@
 class forgotPasswordRequest {
-    constructor(userName, newPassword, hash) {
-        this.userName = userName;
-        this.newPassword = newPassword;
+    constructor(user_name, new_password, hash) {
+        this.user_name = user_name;
+        this.new_password = new_password;
         this.hash = hash;
     }
   
     static validate(data) {
-        const { userName } = data;
+        const { user_name } = data;
         const errors = [];
   
-        if (!userName || userName.length < 5) {
+        if (!user_name || user_name.length < 5) {
             errors.push("User name must be at least 5 characters long.");
         }
-        if (!data.newPassword || data.newPassword.length < 6) {
+        if (!data.new_password || data.new_password.length < 6) {
             errors.push("New password must be at least 6 characters long.");
         }
         if (!data.hash) {

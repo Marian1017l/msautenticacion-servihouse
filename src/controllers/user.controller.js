@@ -9,6 +9,7 @@ const signInRequest = require('../models/signInRequest'); //Importamos el modelo
 const SendforgotPasswordRequest = require('../models/sendForgotPasswordRequest'); //Importamos el modelo de forgotPasswordRequest
 const resetpasswordRequest = require('../models/resetPasswordRequest'); //Importamos el modelo de resetPasswordRequest
 const forgotPasswordRequest = require('../models/forgotPasswordRequest'); //Importamos el modelo de forgotPasswordRequest
+const verifyToken = require('../middlewares/auth'); //Importamos la validacion del token
 require("dotenv").config(); //Nos permite leer las variables de entorno
 const { UserService } = require('../services/user.service'); //Importamos el servicio de usuario
 const e = require('express');
@@ -31,13 +32,13 @@ const signUp = async (req, res) => {
         })
     }
     
-    let { userName, email, phone, password, rolName, emailNotification } = req.body; 
+    let { user_name, email, phone, password, rol_name, email_notification, full_name } = req.body; 
     try {
         const existingUser = await prisma.user.findFirst({
             where: {
             OR: [
                 { email },
-                { userName }
+                { user_name }
             ]
             }
         });
@@ -54,7 +55,7 @@ const signUp = async (req, res) => {
         expirationTime.setMinutes(expirationTime.getMinutes() + 15);
         const rol = await prisma.rol.findFirst({
             where: {
-                name: rolName
+                name: rol_name
             }
         });
         if (!rol) {
@@ -66,8 +67,9 @@ const signUp = async (req, res) => {
         }
         const user = await prisma.user.create({
             data: {
-                userName,
+                user_name,
                 email,
+                full_name : full_name,
                 phone,
                 password: hashedPassword,
                 status: "PENDING",
@@ -76,15 +78,15 @@ const signUp = async (req, res) => {
                         id: rol.id
                     }
                 },
-                verificationCode: code, 
-                verificationCodeExpiration: expirationTime
+                verification_code: code, 
+                verification_code_expiration: expirationTime
             },
         });
-        if (emailNotification) {
-            UserService.sendVerificationEmail(email, code, userName); 
+        if (email_notification) {
+            UserService.sendVerificationEmail(email, code, user_name); 
         }
         else{
-            UserService.sendVerificationSMS(phone, code, userName);
+            UserService.sendVerificationSMS(phone, code, user_name);
         }
 
         res.status(201).json({
@@ -119,13 +121,13 @@ const resendVerifyCode = async (req, res) => {
             message: modelErrors
         })
     }
-    let { userName, email, phone, emailNotification } = req.body;
+    let { user_name, email, phone, email_notification } = req.body;
     try {
         const user = await prisma.user.findFirst({
             where: {
                 OR: [
                     { email },
-                    { userName }
+                    { user_name }
                 ]
             }
         });
@@ -144,15 +146,15 @@ const resendVerifyCode = async (req, res) => {
                 id: user.id
             },
             data: {
-                verificationCode: code,
-                verificationCodeExpiration: expirationTime
+                verification_code: code,
+                verification_code_expiration: expirationTime
             }
         });
-        if (emailNotification) {
-            UserService.sendVerificationEmail(email, code, userName); 
+        if (email_notification) {
+            UserService.sendVerificationEmail(email, code, user_name); 
         }
         else{
-            UserService.sendVerificationSMS(phone, code, userName);
+            UserService.sendVerificationSMS(phone, code, user_name);
         }
 
         res.status(200).json({
@@ -187,11 +189,11 @@ const verifyCode = async (req, res) => {
             message: modelErrors
         })
     }
-    let { userName, code } = req.body;
+    let { user_name, code } = req.body;
     try {
         const user = await prisma.user.findFirst({
             where: {
-                 userName 
+                 user_name 
             }
         });
         if (!user) {
@@ -201,14 +203,14 @@ const verifyCode = async (req, res) => {
                 message: "User does not exist"
             });
         }
-        if (user.verificationCode !== code) {
+        if (user.verification_code !== code) {
             return res.status(400).json({
                 success: false,
                 status: 400,
                 message: "Invalid verification code"
             });
         }
-        if (user.verificationCodeExpiration < new Date()) {
+        if (user.verification_code_expiration < new Date()) {
             return res.status(400).json({
                 success: false,
                 status: 400,
@@ -221,8 +223,8 @@ const verifyCode = async (req, res) => {
             },
             data: {
                 status: "ACTIVE",
-                verificationCode: null,
-                verificationCodeExpiration: null
+                verification_code: null,
+                verification_code_expiration: null
             }
         });
         res.status(200).json({
@@ -258,11 +260,11 @@ const signIn = async (req, res) => {
         })
     }
     
-    let { userName, password, emailNotification } = req.body; 
+    let { user_name, password, email_notification } = req.body; 
     try {
         const user = await prisma.user.findFirst({
             where: {
-                userName
+                user_name
             }
         });
         if (!user) { 
@@ -297,16 +299,16 @@ const signIn = async (req, res) => {
                 id: user.id
             },
             data: {
-                twoFACode: code,
-                twoFAExpiration: expirationTime
+                two_fa_code: code,
+                two_fa_expiration: expirationTime
             }
         });
 
-        if (emailNotification) {
-            UserService.send2FAEmail(user.email, code, userName);
+        if (email_notification) {
+            UserService.send2FAEmail(user.email, code, user_name);
         }
         else{
-            UserService.send2FASMS(user.phone, code, userName);
+            UserService.send2FASMS(user.phone, code, user_name);
         }
         res.status(200).json({
             success: true,
@@ -341,11 +343,11 @@ const resend2FACode = async (req, res) => {
         })
     }
     
-    let { userName, emailNotification, email, phone } = req.body;
+    let { user_name, email_notification, email, phone } = req.body;
     try {
         const user = await prisma.user.findFirst({
             where: {
-                userName
+                user_name
             }
         });
         if (!user) { 
@@ -371,16 +373,16 @@ const resend2FACode = async (req, res) => {
                 id: user.id
             },
             data: {
-                twoFACode: code,
-                twoFAExpiration: expirationTime
+                two_fa_code: code,
+                two_fa_expiration: expirationTime
             }
         });
 
-        if (emailNotification) {
-            UserService.send2FAEmail(user.email, code, userName);
+        if (email_notification) {
+            UserService.send2FAEmail(user.email, code, user_name);
         }
         else{
-            UserService.send2FASMS(user.phone, code, userName);
+            UserService.send2FASMS(user.phone, code, user_name);
         }
         res.status(200).json({
             success: true,
@@ -414,11 +416,11 @@ const verify2FACode = async (req, res) => {
             message: modelErrors
         })
     }
-    let { userName, code } = req.body;
+    let { user_name, code } = req.body;
     try {
         const user = await prisma.user.findFirst({
             where: {
-                 userName 
+                 user_name 
             }
         });
         if (!user) {
@@ -428,14 +430,14 @@ const verify2FACode = async (req, res) => {
                 message: "User does not exist"
             });
         }
-        if (user.twoFACode !== code) {
+        if (user.two_fa_code !== code) {
             return res.status(400).json({
                 success: false,
                 status: 400,
                 message: "Invalid verification code"
             });
         }
-        if (user.twoFAExpiration < new Date()) {
+        if (user.two_fa_expiration < new Date()) {
             return res.status(400).json({
                 success: false,
                 status: 400,
@@ -447,13 +449,13 @@ const verify2FACode = async (req, res) => {
                 id: user.id
             },
             data: {
-                twoFACode: null,
-                twoFAExpiration: null
+                two_fa_code: null,
+                two_fa_expiration: null
             }
         });
         const rolUser = await prisma.rol.findFirst({
             where: {
-                id: user.rolId
+                id: user.rol_id
             }
         });
         res.status(200).json({
@@ -462,7 +464,7 @@ const verify2FACode = async (req, res) => {
             message: "login successfully",
             token: jwt.sign({ 
                 id: user.id,
-                userName: user.userName,
+                user_name: user.user_name,
                 email: user.email,
                 phone: user.phone,
                 permissions: rolUser.permissions
@@ -496,10 +498,10 @@ const sendforgotPassword = async (req, res) => {
             message: errors
         })
     }
-    let {userName, emailNotification} = req.body;
+    let {user_name, email_notification} = req.body;
     const user = await prisma.user.findFirst({
         where: {
-            userName
+            user_name
         }
     });
     if(!user) {
@@ -510,7 +512,7 @@ const sendforgotPassword = async (req, res) => {
         })
     }
     //generar un hash para link de restablecimiento de contraseña
-    const hash = await bcrypt.hash(userName, 10);
+    const hash = await bcrypt.hash(user_name, 10);
     const expirationTime = new Date();
     expirationTime.setMinutes(expirationTime.getMinutes() + 60);
     await prisma.user.update({
@@ -518,17 +520,17 @@ const sendforgotPassword = async (req, res) => {
             id: user.id
         },
         data: {
-            resetPasswordHash: hash,
-            resetPasswordExpiration: expirationTime
+            reset_password_hash: hash,
+            reset_password_expiration: expirationTime
         }
     });
     
-    if(emailNotification) {
-        UserService.sendForgotPasswordEmail(user.email, hash, userName);
+    if(email_notification) {
+        UserService.sendForgotPasswordEmail(user.email, hash, user_name);
     } 
     else
     {
-        UserService.sendForgotPasswordSMS(user.phone, hash, userName); 
+        UserService.sendForgotPasswordSMS(user.phone, hash, user_name); 
     }
     res.status(200).json({
         success: true,
@@ -553,10 +555,10 @@ const sendresetPassword = async (req, res) => {
             message: errors
         })
     }
-    let {userName, emailNotification} = req.body;
+    let {user_name, email_notification} = req.body;
     const user = await prisma.user.findFirst({
         where: {
-            userName
+            user_name
         }
     });
     if(!user) {
@@ -566,7 +568,7 @@ const sendresetPassword = async (req, res) => {
             message: "User does not exist"
         })
     }
-    const hash = await bcrypt.hash(userName, 10);
+    const hash = await bcrypt.hash(user_name, 10);
     const expirationTime = new Date();
     expirationTime.setMinutes(expirationTime.getMinutes() + 60);
     await prisma.user.update({
@@ -574,17 +576,17 @@ const sendresetPassword = async (req, res) => {
             id: user.id
         },
         data: {
-            resetPasswordHash: hash,
-            resetPasswordExpiration: expirationTime
+            reset_password_hash: hash,
+            reset_password_expiration: expirationTime
         }
     });
     
-    if(emailNotification) {
-        UserService.sendRestorePasswordEmail(user.email, hash, userName);
+    if(email_notification) {
+        UserService.sendRestorePasswordEmail(user.email, hash, user_name);
     } 
     else
     {
-        UserService.sendRestorePasswordSMS(user.phone, hash, userName); 
+        UserService.sendRestorePasswordSMS(user.phone, hash, user_name); 
     }
     res.status(200).json({
         success: true,
@@ -594,6 +596,14 @@ const sendresetPassword = async (req, res) => {
 }
 
 const resetpassword = async (req, res) => {
+    const { message, success } = verifyToken(req, 'restorePassword'); 
+        if (!success) {
+            return res.status(401).json({
+                status: false,
+                code: 401,
+                message: message
+            });
+        }
     if(!req.body) { 
         return res.status(400).json({
             success: false,
@@ -609,10 +619,10 @@ const resetpassword = async (req, res) => {
             message: errors
         })
     }
-    let {userName, oldPassword, newPassword, hash} = req.body;
+    let {user_name, old_password, new_password} = req.body;
     const user = await prisma.user.findFirst({
         where: {
-            userName
+            user_name
         }
     });
     if(!user) {
@@ -622,15 +632,16 @@ const resetpassword = async (req, res) => {
             message: "User does not exist"
         })
     }
-    const matchHash = hash === user.resetPasswordHash;
-    if(!matchHash) {
+    let token = req.headers['authorization']?.split(' ')[1];
+    user_name = jwt.decode(token).user_name;
+    if(user.user_name !== user_name) {
         return res.status(400).json({
             success: false,
             status: 400,
-            message: "Invalid hash"
+            message: "User does not match token"
         })
     }
-    const matchPassword = await bcrypt.compare(oldPassword, user.password);
+    const matchPassword = await bcrypt.compare(old_password, user.password);
     if(!matchPassword) {
         return res.status(400).json({
             success: false,
@@ -638,22 +649,15 @@ const resetpassword = async (req, res) => {
             message: "Old password is incorrect"
         })
     }
-    if(user.resetPasswordExpiration < new Date()) {
-        return res.status(400).json({
-            success: false,
-            status: 400,
-            message: "Hash expired"
-        })
-    }
-    const hashedPassword = await bcrypt.hash(newPassword, 10); 
+    const hashedPassword = await bcrypt.hash(new_password, 10); 
     await prisma.user.update({
         where: {
             id: user.id
         },
         data: {
             password: hashedPassword,
-            resetPasswordHash: null,
-            resetPasswordExpiration: null
+            reset_password_hash: null,
+            reset_password_expiration: null
         }
     });
     res.status(200).json({
@@ -679,10 +683,10 @@ const forgotpassword = async (req, res) => {
             message: errors
         })
     }
-    let {userName, newPassword, hash} = req.body;
+    let {user_name, new_password, hash} = req.body;
     const user = await prisma.user.findFirst({
         where: {
-            userName
+            user_name
         }
     });
     if(!user) {
@@ -692,7 +696,7 @@ const forgotpassword = async (req, res) => {
             message: "User does not exist"
         })
     }
-    const matchHash = hash === user.resetPasswordHash;
+    const matchHash = hash === user.reset_password_hash;
     if(!matchHash) {
         return res.status(400).json({
             success: false,
@@ -700,22 +704,22 @@ const forgotpassword = async (req, res) => {
             message: "Invalid hash"
         })
     }
-    if(user.resetPasswordExpiration < new Date()) {
+    if(user.reset_password_expiration < new Date()) {
         return res.status(400).json({
             success: false,
             status: 400,
             message: "Hash expired"
         })
     }
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(new_password, 10);
     await prisma.user.update({
         where: {
             id: user.id
         },
         data: {
             password: hashedPassword,
-            resetPasswordHash: null,
-            resetPasswordExpiration: null
+            reset_password_hash: null,
+            reset_password_expiration: null
         }
     });
     res.status(200).json({
@@ -724,6 +728,50 @@ const forgotpassword = async (req, res) => {
         message: "Password reset successfully"
     })
 }
+
+const getUserById = async (req, res) => {
+    const { id } = req.params; 
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                id: id
+            }
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                status: 404,
+                message: "User not found"
+            });
+        }
+        res.status(200).json({
+            success: true,
+            status: 200,
+            message: "User found",
+            data: {
+                id: user.id,
+                user_name: user.user_name,
+                email: user.email,
+                phone: user.phone,
+                status: user.status,
+                rol : await prisma.rol.findFirst({
+                    where: {
+                        id: user.rol_id
+                    }
+                })
+
+            }
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            status: 500,
+            message: "Error getting user",
+            error: error.message
+        })
+    }
+}
+
 
 module.exports = {
     signUp,
@@ -735,5 +783,6 @@ module.exports = {
     sendresetPassword,
     sendforgotPassword,
     resetpassword,
-    forgotpassword
+    forgotpassword,
+    getUserById
 };

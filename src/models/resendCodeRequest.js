@@ -1,16 +1,16 @@
 class resendCodeRequest {
-    constructor(userName, email, phone, emailNotification) {
-        this.userName = userName;
+    constructor(user_name, email, phone, email_notification) {
+        this.user_name = user_name;
         this.email = email;
         this.phone = phone;
-        this.emailNotification = emailNotification;
+        this.email_notification = email_notification;
     }
   
     static validate(data) {
-        const { userName, email, phone, emailNotification } = data;
+        const { user_name, email, phone, email_notification } = data;
         const errors = [];
   
-        if (!userName || userName.length < 5) {
+        if (!user_name || user_name.length < 5) {
             errors.push("User name must be at least 5 characters long.");
         }
   
@@ -23,7 +23,7 @@ class resendCodeRequest {
         }
   
         
-        if (emailNotification !== undefined && typeof emailNotification !== 'boolean') {
+        if (email_notification !== undefined && typeof email_notification !== 'boolean') {
             errors.push("Email notification must be a boolean value.");
         }
 
