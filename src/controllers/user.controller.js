@@ -343,7 +343,7 @@ const resend2FACode = async (req, res) => {
         })
     }
     
-    let { user_name, email_notification, email, phone } = req.body;
+    let { user_name, email_notification } = req.body;
     try {
         const user = await prisma.user.findFirst({
             where: {
