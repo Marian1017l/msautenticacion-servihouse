@@ -467,7 +467,8 @@ const verify2FACode = async (req, res) => {
                 user_name: user.user_name,
                 email: user.email,
                 phone: user.phone,
-                permissions: rolUser.permissions
+                permissions: rolUser.permissions,
+                rol: rolUser.name,
              }, process.env.JWT_SECRET, { expiresIn: '1h' })
         })
 
