@@ -94,13 +94,13 @@ jest.mock("dotenv", () => ({
   
     test("Return message user lenght", async () => {
       req.body = {
-        userName: "test",
+        user_name: "test",
           email: "test@gmail.com",
           phone: "3333333333",
           password: "1234567",
-          rolName: "ADMINISTRATOR",
-          emailNotification: true
-        //username invalid lenght
+          rol_name: "ADMINISTRATOR",
+          email_notification: true
+        //user_name invalid lenght
       };
       await signUp(req, res);
       expect(res.status).toHaveBeenCalledWith(400);
@@ -113,12 +113,12 @@ jest.mock("dotenv", () => ({
 
     test("Return message email invalid", async () => {
         req.body = {
-            userName: "testes",
+            user_name: "testes",
             email: "test",
             phone: "3333333333",
             password: "1234567",
-            rolName: "ADMINISTRATOR",
-            emailNotification: true
+            rol_name: "ADMINISTRATOR",
+            email_notification: true
             //email invalid format
         };
         await signUp(req, res);
@@ -132,12 +132,12 @@ jest.mock("dotenv", () => ({
 
     test("Return message phone invalid", async () => {
         req.body = {
-            userName: "testes",
+            user_name: "testes",
             email: "test@gmail.com",
             phone: "333",
             password: "1234567",
-            rolName: "ADMINISTRATOR",
-            emailNotification: true
+            rol_name: "ADMINISTRATOR",
+            email_notification: true
           //phone invalid length
         };
         await signUp(req, res);
@@ -151,12 +151,12 @@ jest.mock("dotenv", () => ({
 
       test("Return message password invalid", async () => {
         req.body = {
-            userName: "testes",
+            user_name: "testes",
             email: "test@gmail.com",
             phone: "3333333333",
             password: "12345",
-            rolName: "ADMINISTRATOR",
-            emailNotification: true
+            rol_name: "ADMINISTRATOR",
+            email_notification: true
           //lognitud de contraseña inválida
         };
         // Ejecutamos la prueba
@@ -171,11 +171,11 @@ jest.mock("dotenv", () => ({
 
       test("Return message role invalid", async () => {
         req.body = {
-            userName: "testes",
+            user_name: "testes",
             email: "test@gmail.com",
             phone: "3333333333",
             password: "1234567",
-            emailNotification: true
+            email_notification: true
           //falta el rol
         };
         // Ejecutamos la prueba
@@ -188,14 +188,14 @@ jest.mock("dotenv", () => ({
         });
       });
 
-      test("Return message emailNotification invalid", async () => {
+      test("Return message email_notification invalid", async () => {
         req.body = {
-          userName: "testes",
+          user_name: "testes",
           email: "test@gmail.com",
           phone: "3333333333",
           password: "1234567",
-          rolName: "ADMINISTRATOR",
-          emailNotification: ""
+          rol_name: "ADMINISTRATOR",
+          email_notification: ""
         };
         // Ejecutamos la prueba
         await signUp(req, res);
@@ -209,12 +209,12 @@ jest.mock("dotenv", () => ({
 
       test("Return message role does not exist", async () => {
         req.body = {
-          userName: 'testuser',
+          user_name: 'testuser',
           email: 'test@example.com',
           phone: '3333333333',
           password: 'pass123',
-          rolName: 'None',
-          emailNotification: true
+          rol_name: 'None',
+          email_notification: true
         };
         
         signUpRequest.validate = jest.fn().mockReturnValue(null);
@@ -237,18 +237,18 @@ jest.mock("dotenv", () => ({
     
     test("Should return error if email already exists", async () => {
         req.body = {
-            userName: "testes",
+            user_name: "testes",
             email: "test@gmail.com",
             phone: "3333333333",
             password: "1234567",
-            rolName: "ADMINISTRATOR",
-            emailNotification: true
+            rol_name: "ADMINISTRATOR",
+            email_notification: true
           };
   
       // Configuramos el comportamiento del mock
         prisma.user.findFirst.mockResolvedValue({
         id: 1,
-        userName: "testes",
+        user_name: "testes",
         email: "test@gmail.com",
       });
   
@@ -265,12 +265,12 @@ jest.mock("dotenv", () => ({
   
     // test("Should create a user successfully", async () => {
     //     req.body = {
-    //         userName: "testes",
+    //         user_name: "testes",
     //         email: "test@gmail.com",
     //         phone: "3333333333",
     //         password: "1234567",
-    //         rolName: "ADMINISTRATOR",
-    //         emailNotification: true
+    //         rol_name: "ADMINISTRATOR",
+    //         email_notification: true
     //       };
   
     //   // Usuario no existe
@@ -282,7 +282,7 @@ jest.mock("dotenv", () => ({
     // bcrypt.hash.mockResolvedValue(hashedPassword);
     // UserService.generateCode.mockReturnValue('123456');
     // prisma.user.create.mockResolvedValue({ id: 1,
-    //         userName: "testes",
+    //         user_name: "testes",
     //         email: "test@gmail.com"});
     //   await signUp(req, res);
     // expect(UserService.sendVerificationEmail).toHaveBeenCalledWith("test@gmail.com","123456", 'testes');
@@ -294,12 +294,12 @@ jest.mock("dotenv", () => ({
 
     test("Should handle server error during sign in", async () => {
         req.body = {
-            userName: "testes",
+            user_name: "testes",
             email: "test@gmail.com",
             phone: "3333333333",
             password: "1234567",
-            rolName: "ADMINISTRATOR",
-            emailNotification: true
+            rol_name: "ADMINISTRATOR",
+            email_notification: true
           };
         
         // Simulamos un error en la base de datos
@@ -349,7 +349,7 @@ jest.mock("dotenv", () => ({
 
       });
       test("Should return 400 if validation fails", async () => {
-        req.body = { userName: "", password: "" };
+        req.body = { user_name: "", password: "" };
         signInRequest.validate = jest.fn().mockReturnValue("Validation error");
       
         await signIn(req, res);
@@ -362,7 +362,7 @@ jest.mock("dotenv", () => ({
         });
       });
       test("Should return 400 if user does not exist", async () => {
-        req.body = { userName: "noUser", password: "123456" };
+        req.body = { user_name: "noUser", password: "123456" };
         signInRequest.validate = jest.fn().mockReturnValue(null);
         prisma.user.findFirst = jest.fn().mockResolvedValue(null);
       
@@ -377,7 +377,7 @@ jest.mock("dotenv", () => ({
       });
       test("Should return 400 if password is invalid", async () => {
         req.body = { 
-            userName: "user", 
+            user_name: "user", 
             password: "wrongpass" 
         };
         signInRequest.validate = jest.fn().mockReturnValue(null);
@@ -398,13 +398,13 @@ jest.mock("dotenv", () => ({
 
       test("Should return 400 if user is not active", async () => {
         req.body = { 
-            userName: "user", 
+            user_name: "user", 
             password: "123456" 
         };
         signInRequest.validate = jest.fn().mockReturnValue(null);
         const user = { 
             id: 1, 
-            userName: "user", 
+            user_name: "user", 
             password: "123456", 
             status: "PENDING" 
         };
@@ -423,12 +423,12 @@ jest.mock("dotenv", () => ({
 
       // test("Should send 2FA and return 200", async () => {
       //   const testCode = "123456";
-      //   const testUserName = "user";
+      //   const testuser_name = "user";
         
       //   req.body = {
-      //     userName: testUserName,
+      //     user_name: testuser_name,
       //     password: "123456",
-      //     emailNotification: true
+      //     email_notification: true
       //   };
       
       //   jest.mock('../../../src/services/user.service.js', () => ({
@@ -445,7 +445,7 @@ jest.mock("dotenv", () => ({
         
       //   const user = {
       //     id: 1,
-      //     userName: testUserName,
+      //     user_name: testuser_name,
       //     email: "test@gmail.com",
       //     phone: "3333333333",
       //     password: "hashed_pass",
@@ -461,7 +461,7 @@ jest.mock("dotenv", () => ({
       //   expect(mockUserService.send2FAEmail).toHaveBeenCalledWith(
       //     "test@gmail.com", 
       //     "123456", 
-      //     testUserName
+      //     testuser_name
       //   );
       //   expect(res.status).toHaveBeenCalledWith(200);
       //   expect(res.json).toHaveBeenCalledWith({
@@ -473,12 +473,12 @@ jest.mock("dotenv", () => ({
 
       test("Should handle server error during sign in", async () => {
         req.body = {
-            userName: "testes",
+            user_name: "testes",
             email: "test@gmail.com",
             phone: "3333333333",
             password: "1234567",
-            rolName: "ADMINISTRATOR",
-            emailNotification: true
+            rol_name: "ADMINISTRATOR",
+            email_notification: true
           };
         
         // Simulamos un error en la base de datos
@@ -527,7 +527,7 @@ jest.mock("dotenv", () => ({
       });
       test("Should return error if validation fails", async () => {
         req.body = { 
-            userName: "", 
+            user_name: "", 
             code: "" 
         };
         verifyCodeRequest.validate= jest.fn().mockReturnValue("Validation error");
@@ -540,7 +540,7 @@ jest.mock("dotenv", () => ({
         }));
       });
       test("Should return 400 if user does not exist", async () => {
-        req.body = { userName: "nonexistent", code: "123456" };
+        req.body = { user_name: "nonexistent", code: "123456" };
         verifyCodeRequest.validate= jest.fn().mockReturnValue(null);
         prisma.user.findFirst.mockResolvedValue(null);
     
@@ -554,12 +554,12 @@ jest.mock("dotenv", () => ({
         }));
       });
       test("Should return 400 if code is invalid", async () => {
-        req.body = { userName: "user", code: "000000" };
+        req.body = { user_name: "user", code: "000000" };
         verifyCodeRequest.validate= jest.fn().mockReturnValue(null);
         prisma.user.findFirst.mockResolvedValue({
           id: 1,
-          verificationCode: "123456",
-          verificationCodeExpiration: new Date(Date.now() + 60000)
+          verification_code: "123456",
+          verification_code_expiration: new Date(Date.now() + 60000)
         });
     
         await verifyCode(req, res);
@@ -572,12 +572,12 @@ jest.mock("dotenv", () => ({
         }));
       });
       test("Should return 400 if code is expired", async () => {
-        req.body = { userName: "user", code: "123456" };
+        req.body = { user_name: "user", code: "123456" };
         verifyCodeRequest.validate= jest.fn().mockReturnValue(null);
         prisma.user.findFirst.mockResolvedValue({
           id: 1,
-          verificationCode: "123456",
-          verificationCodeExpiration: new Date(Date.now() - 60000) // expired
+          verification_code: "123456",
+          verification_code_expiration: new Date(Date.now() - 60000) // expired
         });
     
         await verifyCode(req, res);
@@ -590,12 +590,12 @@ jest.mock("dotenv", () => ({
         }));
       });
       test("Should activate user successfully", async () => {
-        req.body = { userName: "user", code: "123456" };
+        req.body = { user_name: "user", code: "123456" };
         verifyCodeRequest.validate= jest.fn().mockReturnValue(null);
         prisma.user.findFirst.mockResolvedValue({
           id: 1,
-          verificationCode: "123456",
-          verificationCodeExpiration: new Date(Date.now() + 60000)
+          verification_code: "123456",
+          verification_code_expiration: new Date(Date.now() + 60000)
         });
     
         prisma.user.update.mockResolvedValue({});
@@ -606,8 +606,8 @@ jest.mock("dotenv", () => ({
           where: { id: 1 },
           data: {
             status: "ACTIVE",
-            verificationCode: null,
-            verificationCodeExpiration: null
+            verification_code: null,
+            verification_code_expiration: null
           }
         });
         expect(res.status).toHaveBeenCalledWith(200);
@@ -618,7 +618,7 @@ jest.mock("dotenv", () => ({
         }));
     });
     test("Should return 500 if an exception occurs", async () => {
-        req.body = { userName: "user", code: "123456" };
+        req.body = { user_name: "user", code: "123456" };
         verifyCodeRequest.validate.mockReturnValue(null);
         prisma.user.findFirst.mockRejectedValue(new Error("DB error"));
     
@@ -662,7 +662,7 @@ jest.mock("dotenv", () => ({
       });
     test("Should return error if validation fails", async () => {
         req.body = { 
-            userName: "", 
+            user_name: "", 
             code: "" 
         };
         verifyCodeRequest.validate= jest.fn().mockReturnValue("Validation error");
@@ -675,7 +675,7 @@ jest.mock("dotenv", () => ({
         }));
     });
     test("Should return 400 if user does not exist", async () => {
-        req.body = { userName: "nonexistent", code: "123456" };
+        req.body = { user_name: "nonexistent", code: "123456" };
         verifyCodeRequest.validate= jest.fn().mockReturnValue(null);
         prisma.user.findFirst.mockResolvedValue(null);
     
@@ -689,12 +689,12 @@ jest.mock("dotenv", () => ({
         }));
       });
     test("Should return 400 if code is invalid", async () => {
-        req.body = { userName: "user", code: "000000" };
+        req.body = { user_name: "user", code: "000000" };
         verifyCodeRequest.validate= jest.fn().mockReturnValue(null);
         prisma.user.findFirst.mockResolvedValue({
           id: 1,
-          twoFACode: "123456",
-          twoFAExpiration: new Date(Date.now() + 60000)
+          two_fa_code: "123456",
+          two_fa_expiration: new Date(Date.now() + 60000)
         });
     
         await verify2FACode(req, res);
@@ -707,12 +707,12 @@ jest.mock("dotenv", () => ({
         }));
       });
     test("Should return 400 if code is expired", async () => {
-        req.body = { userName: "user", code: "123456" };
+        req.body = { user_name: "user", code: "123456" };
         verifyCodeRequest.validate= jest.fn().mockReturnValue(null);
         prisma.user.findFirst.mockResolvedValue({
           id: 1,
-          twoFACode: "123456",
-          twoFAExpiration: new Date(Date.now() - 60000) // expired
+          two_fa_code: "123456",
+          two_fa_expiration: new Date(Date.now() - 60000) // expired
         });
     
         await verify2FACode(req, res);
@@ -726,16 +726,16 @@ jest.mock("dotenv", () => ({
     });
     test("Should activate user successfully", async () => {
         req.body = { 
-            userName: "user", 
+            user_name: "user", 
             code: "123456" 
         };
         const mockUser = {
             id: 1,
-            userName: "testuser",
+            user_name: "testuser",
             email: "test@example.com",
             phone: "1234567890",
-            twoFACode: "123456",
-            twoFAExpiration: new Date(Date.now() + 10000),
+            two_fa_code: "123456",
+            two_fa_expiration: new Date(Date.now() + 10000),
             rolId: 2
           };
         const mockRol = {
@@ -751,7 +751,7 @@ jest.mock("dotenv", () => ({
 
         expect(jwt.sign).toHaveBeenCalledWith({
             id: mockUser.id,
-            userName: mockUser.userName,
+            user_name: mockUser.user_name,
             email: mockUser.email,
             phone: mockUser.phone,
             permissions: mockRol.permissions
@@ -764,7 +764,7 @@ jest.mock("dotenv", () => ({
           }));
     });
     test("Should return 500 if an exception occurs", async () => {
-        req.body = { userName: "user", code: "123456" };
+        req.body = { user_name: "user", code: "123456" };
         verifyCodeRequest.validate.mockReturnValue(null);
         prisma.user.findFirst.mockRejectedValue(new Error("DB error"));
     
