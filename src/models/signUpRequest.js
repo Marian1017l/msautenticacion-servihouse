@@ -1,5 +1,5 @@
 class signUpRequest {
-    constructor(user_name, email, phone, password, rol_name, email_notification, full_name) {
+    constructor(user_name, email, phone, password, rol_name, email_notification, full_name, city, department) {
         this.user_name = user_name;
         this.email = email;
         this.phone = phone;
@@ -7,10 +7,12 @@ class signUpRequest {
         this.rol_name = rol_name;
         this.email_notification = email_notification;
         this.full_name = full_name;
+        this.city = city;
+        this.department = department;
     }
   
     static validate(data) {
-        const { user_name, email, phone, password, rol_name, email_notification } = data;
+        const { user_name, email, phone, password, rol_name, email_notification, city, department} = data;
         const errors = [];
   
         if (!user_name || user_name.length < 5) {
@@ -39,6 +41,12 @@ class signUpRequest {
 
         if (!data.full_name || data.full_name.length < 5) {
             errors.push("Full name must be at least 5 characters long.");
+        }
+        if (!city || city.length < 3) {
+            errors.push("City must be at least 3 characters long.");
+        }
+        if (!department || department.length < 3) {
+            errors.push("Department must be at least 3 characters long.");
         }
         return errors.length > 0 ? errors : null;
     }

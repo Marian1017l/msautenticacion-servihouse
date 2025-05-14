@@ -23,6 +23,8 @@ model User {
   verification_code_expiration DateTime?
   reset_password_hash          String?
   reset_password_expiration    DateTime?
+  city                         String
+  department                   String  
   createdAt                    DateTime  @default(now())
   updatedAt                    DateTime  @updatedAt
 }
