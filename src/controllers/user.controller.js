@@ -32,7 +32,7 @@ const signUp = async (req, res) => {
         })
     }
     
-    let { user_name, email, phone, password, rol_name, email_notification, full_name } = req.body; 
+    let { user_name, email, phone, password, rol_name, email_notification, full_name, city, department} = req.body; 
     try {
         const existingUser = await prisma.user.findFirst({
             where: {
@@ -78,6 +78,8 @@ const signUp = async (req, res) => {
                         id: rol.id
                     }
                 },
+                city,
+                department,
                 verification_code: code, 
                 verification_code_expiration: expirationTime
             },
