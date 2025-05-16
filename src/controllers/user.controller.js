@@ -762,7 +762,6 @@ const getUserById = async (req, res) => {
                         id: user.rol_id
                     }
                 })
-
             }
         })
     } catch (error) {
@@ -775,6 +774,39 @@ const getUserById = async (req, res) => {
     }
 }
 
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await prisma.user.findMany();
+        const data = await Promise.all(users.map(async user => ({
+            id: user.id,
+            user_name: user.user_name,
+            full_name: user.full_name,
+            email: user.email,
+            phone: user.phone,
+            status: user.status,
+            rol: (await prisma.rol.findFirst({
+                where: {
+                    id: user.rol_id
+                }
+            })).name,
+            city: user.city,
+            department: user.department,
+        })));
+        res.status(200).json({
+            success: true,
+            status: 200,
+            message: "Users found",
+            data: data
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            status: 500,
+            message: "Error getting users",
+            error: error.message
+        })
+    }
+}
 
 module.exports = {
     signUp,
@@ -787,5 +819,6 @@ module.exports = {
     sendforgotPassword,
     resetpassword,
     forgotpassword,
-    getUserById
+    getUserById,
+    getAllUsers
 };
