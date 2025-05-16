@@ -13,7 +13,8 @@ const getDepartments = async (req, res) => {
 }
 
 const getCitiesByDepartment = async (req, res) => { 
-    const { department } = req.params;
+    let { department } = req.params;
+    department = decodeURIComponent(department);
     const cities = dataDeparments[department];
     if (!cities) {
         return res.status(404).json({
