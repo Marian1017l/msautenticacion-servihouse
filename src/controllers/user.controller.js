@@ -808,6 +808,87 @@ const getAllUsers = async (req, res) => {
     }
 }
 
+const updateUser = async (req, res) => {
+    const { id } = req.params;
+    const { user_name, email, phone, status, rol_id, city, department } = req.body;
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                id: id
+            }
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                status: 404,
+                message: "User not found"
+            });
+        }
+        await prisma.user.update({
+            where: {
+                id: id
+            },
+            data: {
+                user_name,
+                email,
+                phone,
+                status,
+                rol_id,
+                city,
+                department
+            }
+        });
+        res.status(200).json({
+            success: true,
+            status: 200,
+            message: "User updated successfully"
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            status: 500,
+            message: "Error updating user",
+            error: error.message
+        })
+    }
+}
+
+const deleteUser = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                id: id
+            }
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                status: 404,
+                message: "User not found"
+            });
+        }
+        await prisma.user.delete({
+            where: {
+                id: id
+            }
+        });
+        res.status(200).json({
+            success: true,
+            status: 200,
+            message: "User deleted successfully"
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            status: 500,
+            message: "Error deleting user",
+            error: error.message
+        })
+    }
+}
+
+
 module.exports = {
     signUp,
     resendVerifyCode,
@@ -820,5 +901,7 @@ module.exports = {
     resetpassword,
     forgotpassword,
     getUserById,
-    getAllUsers
+    getAllUsers,
+    updateUser,
+    deleteUser
 };

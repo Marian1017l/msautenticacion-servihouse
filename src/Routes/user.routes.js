@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const {signUp, resendVerifyCode, verifyCode, signIn, resend2FACode, verify2FACode,
-    sendresetPassword, sendforgotPassword, resetpassword, forgotpassword, getUserById, getAllUsers
+    sendresetPassword, sendforgotPassword, resetpassword, forgotpassword, getUserById, getAllUsers,
+    updateUser, deleteUser
 } = require('../controllers/user.controller');
 
 router.post('/SignUp', signUp);
@@ -16,5 +17,7 @@ router.post('/ResetPassword', resetpassword);
 router.post('/ForgotPassword', forgotpassword);
 router.get('/GetUserById/:id', getUserById);
 router.get('/GetAllUsers', getAllUsers);
+router.put('/UpdateUser/:id', updateUser);
+router.delete('/DeleteUser/:id', deleteUser);
 
 module.exports = router;
