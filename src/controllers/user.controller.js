@@ -13,6 +13,7 @@ const verifyToken = require('../middlewares/auth'); //Importamos la validacion d
 require("dotenv").config(); //Nos permite leer las variables de entorno
 const { UserService } = require('../services/user.service'); //Importamos el servicio de usuario
 const e = require('express');
+const createUserRequest = require('../models/createUserRequest');
 
 
 const signUp = async (req, res) => {
@@ -94,7 +95,10 @@ const signUp = async (req, res) => {
         res.status(201).json({
             success: true,
             status: 201,
-            message: "User created, please check your email or phone for the verification code"
+            message: "User created, please check your email or phone for the verification code",
+            data: {
+                userId: user.id
+            }
         })
 
     } catch (error) {
@@ -485,7 +489,6 @@ const verify2FACode = async (req, res) => {
         })
     }
 }
-
 
 const sendforgotPassword = async (req, res) => {
     if (!req.body) {
@@ -888,6 +891,100 @@ const deleteUser = async (req, res) => {
     }
 }
 
+const createUser = async (req, res) => {
+    const { message, success } = verifyToken(req, 'createUser'); 
+        if (!success) {
+            return res.status(401).json({
+                status: false,
+                code: 401,
+                message: message
+            });
+        }
+    if (!req.body) {
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: "Request body is required"
+        })
+    }
+    let modelErrors = createUserRequest.validate(req.body);
+    if (modelErrors) {
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: modelErrors
+        })
+    }
+
+    let { user_name, email, phone, rol_name, full_name, city, department } = req.body;
+    try {
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { email },
+                    { user_name }
+                ]
+            }
+        });
+        if (existingUser) {
+            return res.status(400).json({
+                success: false,
+                status: 400,
+                message: "User already exists"
+            });
+        }
+        const new_password = UserService.createPassword();
+        const hashedPassword = await bcrypt.hash(new_password, 10);
+        const rol = await prisma.rol.findFirst({
+            where: {
+                name: rol_name
+            }
+        });
+        if (!rol) {
+            return res.status(400).json({
+                success: false,
+                status: 400,
+                message: "Role does not exist"
+            });
+        }
+        const user = await prisma.user.create({
+            data: {
+                user_name,
+                email,
+                full_name: full_name,
+                phone,
+                password: hashedPassword,
+                status: "ACTIVE",
+                rol: {
+                    connect: {
+                        id: rol.id
+                    }
+                },
+                city,
+                department
+            },
+        });
+            UserService.sendNewPasswordEmail(email, user_name, new_password);
+
+        res.status(201).json({
+            success: true,
+            status: 201,
+            message: "User created, please check your email or phone for the verification code",
+            data: {
+                userId: user.id
+            }
+        })
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            status: 500,
+            message: "User was not created",
+            error: error.message
+        })
+    }
+}
+
 
 module.exports = {
     signUp,
@@ -903,5 +1000,6 @@ module.exports = {
     getUserById,
     getAllUsers,
     updateUser,
-    deleteUser
+    deleteUser,
+    createUser
 };

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {signUp, resendVerifyCode, verifyCode, signIn, resend2FACode, verify2FACode,
     sendresetPassword, sendforgotPassword, resetpassword, forgotpassword, getUserById, getAllUsers,
-    updateUser, deleteUser
+    updateUser, deleteUser, createUser
 } = require('../controllers/user.controller');
 
 router.post('/SignUp', signUp);
@@ -19,5 +19,6 @@ router.get('/GetUserById/:id', getUserById);
 router.get('/GetAllUsers', getAllUsers);
 router.put('/UpdateUser/:id', updateUser);
 router.delete('/DeleteUser/:id', deleteUser);
+router.post('', createUser);
 
 module.exports = router;
