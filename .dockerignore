@@ -3,8 +3,6 @@ node_modules
 npm-debug.log
 
 # Ignora archivos de entorno sensibles
-.env
-
 # Ignora archivos de configuración de desarrollo
 .vscode
 *.log

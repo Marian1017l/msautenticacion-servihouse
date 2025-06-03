@@ -11,6 +11,8 @@ RUN npx prisma generate
 
 
 COPY . .
+COPY .env .env
+
 
 EXPOSE 8001
 
